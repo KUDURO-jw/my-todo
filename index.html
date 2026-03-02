@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极简待办清单</title>
+    <style>
+        /* 全局样式 */
+        :root {
+            --bg-color: #f5f7f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #95a5a6;
+            --accent-green: #2ecc71; /* 薄荷绿 */
+            --danger-red: #e74c3c;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            font-weight: 300;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        /* 输入区域 */
+        .input-group {
+            display: flex;
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 10px 15px;
+            font-size: 16px;
+        }
+
+        button#add-btn {
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button#add-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* 列表区域 */
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .todo-item {
+            background: var(--card-bg);
+            margin-bottom: 12px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+            position: relative;
+            group: hover;
+        }
+
+        .todo-content {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .todo-text {
+            font-size: 16px;
+            margin-bottom: 4px;
+            transition: all 0.3s;
+        }
+
+        .todo-time {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* 完成状态 */
+        .completed .todo-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .completed .todo-time {
+            color: #dcdde1;
+        }
+
+        .completed {
+            border-left: 4px solid var(--accent-green);
+        }
+
+        /* 删除按钮 - 默认隐藏，悬停显示 */
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 18px;
+            opacity: 0;
+            transition: opacity 0.2s, color 0.2s;
+            margin-left: 10px;
+        }
+
+        .todo-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            color: var(--danger-red);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>TODO</h2>
+    
+    <div class="input-group">
+        <input type="text" id="todo-input" placeholder="添加一个新的任务..." maxlength="50">
+        <button id="add-btn">添加</button>
+    </div>
+
+    <ul id="todo-list"></ul>
+</div>
+
+<script>
+    const input = document.getElementById('todo-input');
+    const addBtn = document.getElementById('add-btn');
+    const todoList = document.getElementById('todo-list');
+
+    // 从 LocalStorage 加载数据
+    let todos = JSON.parse(localStorage.getItem('myTodos')) || [];
+
+    function saveTodos() {
+        localStorage.setItem('myTodos', JSON.stringify(todos));
+    }
+
+    function formatDate() {
+        const now = new Date();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        const h = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        return `${m}-${d} ${h}:${min}`;
+    }
+
+    function renderTodos() {
+        todoList.innerHTML = '';
+        todos.forEach((todo, index) => {
+            const li = document.createElement('li');
+            li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+            
+            li.innerHTML = `
+                <div class="todo-content" onclick="toggleTodo(${index})">
+                    <span class="todo-text">${todo.text}</span>
+                    <span class="todo-time">${todo.time}</span>
+                </div>
+                <button class="delete-btn" onclick="deleteTodo(${index})">✕</button>
+            `;
+            todoList.appendChild(li);
+        });
+    }
+
+    function addTodo() {
+        const text = input.value.trim();
+        if (text) {
+            todos.push({
+                text: text,
+                time: formatDate(),
+                completed: false
+            });
+            input.value = '';
+            saveTodos();
+            renderTodos();
+        }
+    }
+
+    window.toggleTodo = function(index) {
+        todos[index].completed = !todos[index].completed;
+        saveTodos();
+        renderTodos();
+    }
+
+    window.deleteTodo = function(index) {
+        todos.splice(index, 1);
+        saveTodos();
+        renderTodos();
+    }
+
+    addBtn.addEventListener('click', addTodo);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addTodo();
+    });
+
+    // 初始化渲染
+    renderTodos();
+</script>
+
+</body>
+</html>
