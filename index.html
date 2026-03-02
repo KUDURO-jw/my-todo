@@ -3,91 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>极简待办清单</title>
+    <title>现代毛玻璃待办清单</title>
     <style>
-        /* 全局样式 */
+        /* ====================
+           1. 全局与主题变量 (可视化升级)
+           ==================== */
         :root {
-            --bg-color: #f5f7f9;
-            --card-bg: #ffffff;
-            --text-main: #2c3e50;
-            --text-muted: #95a5a6;
-            --accent-green: #2ecc71; /* 薄荷绿 */
-            --danger-red: #e74c3c;
-            --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            /* 更有活力的配色 */
+            --main-bg: #e0e6ed; /* 浅柔灰，突出毛玻璃 */
+            --card-bg: rgba(255, 255, 255, 0.7); /* 半透明，毛玻璃核心 */
+            
+            --text-primary: #1a1a1a;
+            --text-secondary: #5e6d7a;
+            
+            /* 状态色 - 可视化重点 */
+            --accent-blue: #3498db;  /* 添加按钮 */
+            --accent-green: #00c853; /* 完成/安全 */
+            --accent-orange: #f39c12; /* 快到期提醒 */
+            --accent-red: #e74c3c;    /* 超时提醒 */
+            
+            --blur: blur(10px); /* 毛玻璃模糊度 */
+            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --shadow-inset: inset 0 2px 4px rgba(255, 255, 255, 0.5);
+            --border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
+        /* ====================
+           2. 基础布局与动画
+           ==================== */
         body {
-            background-color: var(--bg-color);
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--main-bg);
+            /* 增加动态背景色，让毛玻璃更明显 */
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(52, 152, 219, 0.1) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(46, 204, 113, 0.1) 0px, transparent 50%);
+            font-family: 'PingFang SC', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
             display: flex;
             justify-content: center;
-            padding: 40px 20px;
-            color: var(--text-main);
+            min-height: 100vh;
             margin: 0;
+            padding: 40px 20px;
+            color: var(--text-primary);
         }
 
         .container {
             width: 100%;
-            max-width: 500px;
+            max-width: 550px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h2 {
             font-weight: 300;
             text-align: center;
-            letter-spacing: 2px;
+            letter-spacing: 4px;
+            color: var(--text-primary);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.05);
             margin-bottom: 30px;
         }
 
-        /* 输入区域 */
+        /* ====================
+           3. 输入区域 (交互增强)
+           ==================== */
         .input-group {
-            display: flex;
             background: var(--card-bg);
-            padding: 10px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
+            backdrop-filter: var(--blur);
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-soft);
+            border: var(--border);
+            display: flex;
+            gap: 10px;
             margin-bottom: 25px;
         }
 
-        input[type="text"] {
+        .inputs-wrapper {
             flex: 1;
-            border: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        input[type="text"], input[type="date"] {
+            border: 1px solid rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.5);
             outline: none;
-            padding: 10px 15px;
-            font-size: 16px;
+            padding: 12px 15px;
+            font-size: 15px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            color: var(--text-primary);
+        }
+
+        input[type="text"]:focus, input[type="date"]:focus {
+            border-color: var(--accent-blue);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
         }
 
         button#add-btn {
-            background-color: var(--accent-green);
+            background: var(--accent-blue);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 0 25px;
             border-radius: 8px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            font-size: 16px;
+            transition:all 0.2s ease;
+            white-space: nowrap;
         }
 
         button#add-btn:hover {
-            opacity: 0.8;
+            opacity: 0.9;
+            transform: scale(1.03);
         }
 
-        /* 列表区域 */
-        ul {
+        /* ====================
+           4. 任务列表区域
+           ==================== */
+        #todo-list {
             list-style: none;
             padding: 0;
+            margin: 0;
         }
 
         .todo-item {
             background: var(--card-bg);
-            margin-bottom: 12px;
-            padding: 15px 20px;
-            border-radius: 12px;
+            backdrop-filter: var(--blur);
+            margin-bottom: 15px;
+            padding: 18px 25px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-soft);
+            border: var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
-            group: hover;
+            overflow: hidden; /* 用于超时高亮效果 */
+        }
+
+        /* 可视化高亮：左侧状态条 */
+        .todo-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            background: transparent;
+            transition: background 0.3s;
+        }
+
+        /* 鼠标悬停微动，提升互动感 */
+        .todo-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
         }
 
         .todo-content {
@@ -95,51 +170,88 @@
             flex-direction: column;
             cursor: pointer;
             flex: 1;
+            padding-right: 20px;
         }
 
         .todo-text {
-            font-size: 16px;
-            margin-bottom: 4px;
+            font-size: 17px;
+            margin-bottom: 6px;
+            color: var(--text-primary);
             transition: all 0.3s;
         }
 
-        .todo-time {
+        /* ====================
+           5. 时间标注 (可视化核心)
+           ==================== */
+        .todo-time-info {
+            display: flex;
+            gap: 15px;
             font-size: 12px;
-            color: var(--text-muted);
+            color: var(--text-secondary);
         }
 
-        /* 完成状态 */
+        .time-tag {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 图标 (使用 CSS 模拟，避免外部库) */
+        .ico { width: 12px; height: 12px; display: inline-block; }
+        .ico-create { background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>') center/cover; }
+        .ico-due { background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2"><path d="M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>') center/cover; }
+
+        /* ====================
+           6. 动态状态样式 (可视化逻辑)
+           ==================== */
+        
+        /* [状态1: 已完成] - 薄荷绿 */
+        .completed::before { background: var(--accent-green); }
         .completed .todo-text {
             text-decoration: line-through;
-            color: var(--text-muted);
+            color: var(--text-secondary);
+            opacity: 0.6;
         }
+        .completed .todo-time-info { opacity: 0.5; }
 
-        .completed .todo-time {
-            color: #dcdde1;
-        }
+        /* [状态2: 任务紧急] - 橙色提醒 (JS 激活) */
+        .status-urgent { background: rgba(243, 156, 18, 0.05); }
+        .status-urgent::before { background: var(--accent-orange); }
+        .status-urgent .due-date { color: var(--accent-orange); font-weight: bold;}
 
-        .completed {
-            border-left: 4px solid var(--accent-green);
-        }
+        /* [状态3: 任务超时] - 红色警告 (JS 激活) */
+        .status-overdue { background: rgba(231, 76, 60, 0.05); }
+        .status-overdue::before { background: var(--accent-red); }
+        .status-overdue .due-date { color: var(--accent-red); font-weight: bold;}
 
-        /* 删除按钮 - 默认隐藏，悬停显示 */
+
+        /* ====================
+           7. 操作按钮 (删除)
+           ==================== */
         .delete-btn {
-            background: none;
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--accent-red);
             border: none;
-            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             cursor: pointer;
-            font-size: 18px;
-            opacity: 0;
-            transition: opacity 0.2s, color 0.2s;
-            margin-left: 10px;
+            font-size: 16px;
+            opacity: 0; /* 默认隐藏 */
+            transition: all 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .todo-item:hover .delete-btn {
-            opacity: 1;
+            opacity: 1; /* 悬停显示 */
         }
 
         .delete-btn:hover {
-            color: var(--danger-red);
+            background: var(--accent-red);
+            color: white;
+            transform: rotate(90deg);
         }
     </style>
 </head>
@@ -149,7 +261,10 @@
     <h2>TODO</h2>
     
     <div class="input-group">
-        <input type="text" id="todo-input" placeholder="添加一个新的任务..." maxlength="50">
+        <div class="inputs-wrapper">
+            <input type="text" id="todo-input" placeholder="💡 输入待办事项..." maxlength="50">
+            <input type="date" id="todo-date" title="设置完成截止日期（可选）">
+        </div>
         <button id="add-btn">添加</button>
     </div>
 
@@ -158,74 +273,111 @@
 
 <script>
     const input = document.getElementById('todo-input');
+    const dateInput = document.getElementById('todo-date');
     const addBtn = document.getElementById('add-btn');
     const todoList = document.getElementById('todo-list');
 
-    // 从 LocalStorage 加载数据
-    let todos = JSON.parse(localStorage.getItem('myTodos')) || [];
+    // 本地存储初始化
+    let todos = JSON.parse(localStorage.getItem('myGlassTodos')) || [];
 
     function saveTodos() {
-        localStorage.setItem('myTodos', JSON.stringify(todos));
+        localStorage.setItem('myGlassTodos', JSON.stringify(todos));
     }
 
-    function formatDate() {
-        const now = new Date();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        const h = String(now.getHours()).padStart(2, '0');
-        const min = String(now.getMinutes()).padStart(2, '0');
+    // 格式化时间方法
+    function formatDateTime(dateObj, isOnlyDate = false) {
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        if (isOnlyDate) return `${m}-${d}`;
+        
+        const h = String(dateObj.getHours()).padStart(2, '0');
+        const min = String(dateObj.getMinutes()).padStart(2, '0');
         return `${m}-${d} ${h}:${min}`;
     }
 
+    // 核心渲染方法：包含可视化逻辑
     function renderTodos() {
         todoList.innerHTML = '';
+        const now = new Date();
+        now.setHours(0, 0, 0, 0); // 将今天时间标准化，只比较日期
+
         todos.forEach((todo, index) => {
             const li = document.createElement('li');
             li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
             
+            // --- 截止日期可视化计算 ---
+            let dueDateHtml = '';
+            if (todo.dueDate) {
+                const dueDate = new Date(todo.dueDate);
+                
+                // 只有在未完成时才计算超时/紧急
+                if (!todo.completed) {
+                    if (dueDate < now) {
+                        li.classList.add('status-overdue'); // 已超时
+                    } else if (dueDate.getTime() === now.getTime()) {
+                        li.classList.add('status-urgent'); // 今天到期
+                    }
+                }
+                
+                dueDateHtml = `<span class="time-tag due-date"><i class="ico ico-due"></i>截止: ${formatDateTime(dueDate, true)}</span>`;
+            }
+
+            // --- HTML 结构 ---
             li.innerHTML = `
                 <div class="todo-content" onclick="toggleTodo(${index})">
                     <span class="todo-text">${todo.text}</span>
-                    <span class="todo-time">${todo.time}</span>
+                    <div class="todo-time-info">
+                        <span class="time-tag"><i class="ico ico-create"></i>创建: ${todo.createTime}</span>
+                        ${dueDateHtml}
+                    </div>
                 </div>
-                <button class="delete-btn" onclick="deleteTodo(${index})">✕</button>
+                <button class="delete-btn" onclick="deleteTodo(${index})" title="删除此任务">✕</button>
             `;
             todoList.appendChild(li);
         });
     }
 
+    // 添加任务
     function addTodo() {
         const text = input.value.trim();
+        const dueDate = dateInput.value; // 如果为空则是 null
+
         if (text) {
             todos.push({
                 text: text,
-                time: formatDate(),
+                createTime: formatDateTime(new Date()), // 记录具体创建时刻
+                dueDate: dueDate, // 用户输入的日期
                 completed: false
             });
             input.value = '';
+            dateInput.value = '';
             saveTodos();
             renderTodos();
+        } else {
+            input.focus();
         }
     }
 
+    // 切换状态
     window.toggleTodo = function(index) {
         todos[index].completed = !todos[index].completed;
         saveTodos();
         renderTodos();
     }
 
+    // 删除
     window.deleteTodo = function(index) {
         todos.splice(index, 1);
         saveTodos();
         renderTodos();
     }
 
+    // 事件监听
     addBtn.addEventListener('click', addTodo);
-    input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') addTodo();
-    });
+    input.addEventListener('keypress', (e) => { e.key === 'Enter' && addTodo(); });
+    dateInput.addEventListener('keypress', (e) => { e.key === 'Enter' && addTodo(); });
 
-    // 初始化渲染
+    // 初始化运行
     renderTodos();
 </script>
 
